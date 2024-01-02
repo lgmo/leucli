@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::io;
 use std::process::Command;
 use crate::settings::Settings;
 
@@ -63,6 +64,31 @@ impl Strategy for CommitStrategy {
     }
 }
 
+struct PushStrategy {
+    branch: String,
+}
 
+impl Strategy for PushStrategy {
+    fn execute(&self) -> Result<(), Box<dyn Error>> {
+        println!("Push da branch {} para o github. Continuar? [y/n]", &self.branch);
+
+        let mut ans: String = String::new();
+        io::stdin().read_line(&mut ans)?;
+        ans = ans.to_lowercase();
+
+        while ans != "s" && ans != "sim" && ans != "n" && ans != "nao" && ans != "não" {
+            println!("Opção inválida! Tente novamente: ");
+            io::stdin().read_line(&mut ans)?;
+            ans = ans.to_lowercase();
+        }
+
+        if ans != "s" || ans != "sim" {
+            Command::new("git")
+                .args(vec!["push", "-u", "origin", &self.branch.as_str()]).status()?;
+        }
+
+        Ok(())
+    }
+}
 
 
