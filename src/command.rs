@@ -1,13 +1,13 @@
 use std::error::Error;
 use std::io;
 use std::process::Command;
-use crate::settings::Settings;
+use crate::context::Context;
 
 pub trait CommandStrategy {
     fn execute (&self) -> Result<(), Box<dyn Error>>;
 }
 
-pub fn get_strategy(settings: Settings) -> Result<Box<dyn CommandStrategy>, &'static str> {
+pub fn get_strategy(settings: Context) -> Result<Box<dyn CommandStrategy>, &'static str> {
     let result: Box<dyn CommandStrategy>;
     if settings.args.len() < 2 {
         result = Box::new(NilStrategy {});

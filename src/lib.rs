@@ -1,12 +1,12 @@
 use std::env;
 use std::error::Error;
 use crate::git_project::GitProject;
-use crate::settings::Settings;
+use crate::context::Context;
 
 mod file_manager;
 mod git_project;
 mod git_manager;
-mod settings;
+mod context;
 mod command;
 #[cfg(test)]
 mod utils;
@@ -15,7 +15,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let cwd = file_manager::get_cwd();
     let project = GitProject::build(&cwd)?;
     let args = env::args().collect();
-    let settings = Settings::build(cwd, project, args)?;
+    let settings = Context::build(cwd, project, args)?;
 
 
     let strategy = command::get_strategy(settings)?;
