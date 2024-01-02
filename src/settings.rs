@@ -15,8 +15,4 @@ impl Settings {
     ) -> Result<Settings, &'a str> {
         Ok(Settings { cwd, project, args })
     }
-
-    pub fn get(&self) -> &Settings {
-        self
-    }
 }

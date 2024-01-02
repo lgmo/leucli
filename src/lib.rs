@@ -3,12 +3,13 @@ use std::error::Error;
 use crate::git_project::GitProject;
 use crate::settings::Settings;
 
-mod utils;
 mod file_manager;
 mod git_project;
 mod git_manager;
 mod settings;
 mod command;
+#[cfg(test)]
+mod utils;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
     let cwd = file_manager::get_cwd();
@@ -17,8 +18,8 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let settings = Settings::build(cwd, project, args)?;
 
 
-    let strategy = command::get_strategy(settings);
-    let _ = strategy();
+    let strategy = command::get_strategy(settings)?;
+    let _ = strategy.execute();
 
     Ok(())
 }
