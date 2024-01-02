@@ -72,7 +72,7 @@ struct PushStrategy {
 
 impl Strategy for PushStrategy {
     fn execute(&self) -> Result<(), Box<dyn Error>> {
-        println!("Push da branch {} para o github. Continuar? [y/n]", &self.branch);
+        println!("Push da branch {} para o github. Continuar? [s/n]", &self.branch);
 
         let mut ans: String = String::new();
 
