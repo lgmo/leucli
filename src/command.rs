@@ -10,9 +10,8 @@ pub trait Strategy {
 pub fn get_strategy(settings: Settings) -> Result<Box<dyn Strategy>, &'static str> {
     let result: Box<dyn Strategy>;
     if settings.args.len() < 2 {
-        result =  Box::new(NilStrategy {});
-    }
-    else if &settings.args[1] == "pull" {
+        result = Box::new(NilStrategy {});
+    } else if &settings.args[1] == "pull" {
         result = Box::new(PullStrategy {});
     } else if &settings.args[1] == "commit" {
         if settings.args.len() < 3 {
@@ -24,6 +23,8 @@ pub fn get_strategy(settings: Settings) -> Result<Box<dyn Strategy>, &'static st
         }
     } else if &settings.args[1] == "push" {
         result = Box::new(PushStrategy { branch: settings.project.unwrap().current_branch })
+    } else if &settings.args[1] == "status" {
+        result = Box::new(StatusStrategy {});
     } else {
         result =  Box::new(NilStrategy {});
     }
@@ -91,6 +92,15 @@ impl Strategy for PushStrategy {
                 .args(vec!["push", "-u", "origin", &self.branch.as_str()]).status()?;
         }
 
+        Ok(())
+    }
+}
+
+struct StatusStrategy {}
+
+impl Strategy for StatusStrategy {
+    fn execute(&self) -> Result<(), Box<dyn Error>> {
+        Command::new("git").args(vec!["status"]).status().unwrap();
         Ok(())
     }
 }
