@@ -3,12 +3,12 @@ use std::io;
 use std::process::Command;
 use crate::settings::Settings;
 
-pub trait Strategy {
+pub trait CommandStrategy {
     fn execute (&self) -> Result<(), Box<dyn Error>>;
 }
 
-pub fn get_strategy(settings: Settings) -> Result<Box<dyn Strategy>, &'static str> {
-    let result: Box<dyn Strategy>;
+pub fn get_strategy(settings: Settings) -> Result<Box<dyn CommandStrategy>, &'static str> {
+    let result: Box<dyn CommandStrategy>;
     if settings.args.len() < 2 {
         result = Box::new(NilStrategy {});
     } else if &settings.args[1] == "pull" {
@@ -34,13 +34,13 @@ pub fn get_strategy(settings: Settings) -> Result<Box<dyn Strategy>, &'static st
 
 struct NilStrategy {}
 
-impl Strategy for NilStrategy {
+impl CommandStrategy for NilStrategy {
     fn execute(&self) -> Result<(), Box<dyn Error>> { Ok(()) }
 }
 
 struct PullStrategy {}
 
-impl Strategy for PullStrategy {
+impl CommandStrategy for PullStrategy {
     fn execute(&self) -> Result<(), Box<dyn Error>> {
         Command::new("git").args(vec!["pull"]).status().unwrap();
         Ok(())
@@ -51,7 +51,7 @@ struct CommitStrategy {
     message: Option<String>,
 }
 
-impl Strategy for CommitStrategy {
+impl CommandStrategy for CommitStrategy {
     fn execute(&self) -> Result<(), Box<dyn Error>> {
         let vargs = match &self.message {
             Some(msg) => { vec!["commit", "-m", msg.as_str()] },
@@ -71,7 +71,7 @@ struct PushStrategy {
     branch: String,
 }
 
-impl Strategy for PushStrategy {
+impl CommandStrategy for PushStrategy {
     fn execute(&self) -> Result<(), Box<dyn Error>> {
         println!("Push da branch {} para o github. Continuar? [s/n]", &self.branch);
 
@@ -98,7 +98,7 @@ impl Strategy for PushStrategy {
 
 struct StatusStrategy {}
 
-impl Strategy for StatusStrategy {
+impl CommandStrategy for StatusStrategy {
     fn execute(&self) -> Result<(), Box<dyn Error>> {
         Command::new("git").args(vec!["status"]).status().unwrap();
         Ok(())
