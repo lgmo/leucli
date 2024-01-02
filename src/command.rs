@@ -22,6 +22,8 @@ pub fn get_strategy(settings: Settings) -> Result<Box<dyn Strategy>, &'static st
                 message: Some(settings.args[2].to_owned())
             });
         }
+    } else if &settings.args[1] == "push" {
+        result = Box::new(PushStrategy { branch: settings.project.unwrap().current_branch })
     } else {
         result =  Box::new(NilStrategy {});
     }
@@ -73,16 +75,18 @@ impl Strategy for PushStrategy {
         println!("Push da branch {} para o github. Continuar? [y/n]", &self.branch);
 
         let mut ans: String = String::new();
-        io::stdin().read_line(&mut ans)?;
-        ans = ans.to_lowercase();
 
-        while ans != "s" && ans != "sim" && ans != "n" && ans != "nao" && ans != "não" {
+        loop {
+            let _ = io::stdin().read_line(&mut ans)?;
+            ans = ans.trim().to_lowercase();
+
+            if ans == "s" || ans == "sim" || ans == "n" || ans == "nao" || ans == "não" {
+                break;
+            }
             println!("Opção inválida! Tente novamente: ");
-            io::stdin().read_line(&mut ans)?;
-            ans = ans.to_lowercase();
         }
 
-        if ans != "s" || ans != "sim" {
+        if ans == "s" || ans == "sim" {
             Command::new("git")
                 .args(vec!["push", "-u", "origin", &self.branch.as_str()]).status()?;
         }
