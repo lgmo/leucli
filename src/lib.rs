@@ -18,8 +18,8 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let settings = Context::build(cwd, project, args)?;
 
 
-    let strategy = command::get_strategy(settings)?;
-    let _ = strategy.execute();
+    let executor = command::build_executor(settings)?;
+    let _ = executor.execute();
 
     Ok(())
 }

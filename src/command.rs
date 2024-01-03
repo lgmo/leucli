@@ -7,7 +7,7 @@ pub trait CommandStrategy {
     fn execute (&self) -> Result<(), Box<dyn Error>>;
 }
 
-pub fn get_strategy(settings: Context) -> Result<Box<dyn CommandStrategy>, &'static str> {
+pub fn build_executor(settings: Context) -> Result<Box<dyn CommandStrategy>, &'static str> {
     let result: Box<dyn CommandStrategy>;
     if settings.args.len() < 2 {
         result = Box::new(NilStrategy {});
@@ -25,6 +25,8 @@ pub fn get_strategy(settings: Context) -> Result<Box<dyn CommandStrategy>, &'sta
         result = Box::new(PushStrategy { branch: settings.project.unwrap().current_branch })
     } else if &settings.args[1] == "status" {
         result = Box::new(StatusStrategy {});
+    } else if &settings.args[1] == "gremlin" {
+        result = Box::new(GremlinStrategy {})
     } else {
         result =  Box::new(NilStrategy {});
     }
@@ -105,4 +107,13 @@ impl CommandStrategy for StatusStrategy {
     }
 }
 
+struct GremlinStrategy {}
+
+impl CommandStrategy for GremlinStrategy {
+    fn execute(&self) -> Result<(), Box<dyn Error>> {
+        Command::new("sudo").args(vec!["docker", "compose", "up", "-d", "graph-db"])
+            .status().unwrap();
+        Ok(())
+    }
+}
 
