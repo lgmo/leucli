@@ -29,6 +29,10 @@ pub fn build_executor(settings: Context) -> Result<Box<dyn CommandStrategy>, &'s
         result = Box::new(GremlinStrategy {})
     } else if &settings.args[1] == "down" {
         result = Box::new(DownStrategy {})
+    } else if &settings.args[1] == "wip" {
+        result = Box::new(WipStrategy {})
+    } else if &settings.args[1] == "undocommit" || &settings.args[1] == "ucommit" {
+        result = Box::new(UndoCommitStrategy {})
     } else {
         result =  Box::new(NilStrategy {});
     }
@@ -128,3 +132,26 @@ impl CommandStrategy for DownStrategy {
         Ok(())
     }
 }
+
+struct WipStrategy {}
+
+impl CommandStrategy for WipStrategy {
+    fn execute(&self) -> Result<(), Box<dyn Error>> {
+
+        Command::new("git").args(vec!["add", "."]).status()?;
+        Command::new("git").args(vec!["commit", "-m", "\"wip\""])
+            .status().unwrap();
+        Ok(())
+    }
+}
+
+struct UndoCommitStrategy {}
+
+impl CommandStrategy for UndoCommitStrategy {
+    fn execute(&self) -> Result<(), Box<dyn Error>> {
+        Command::new("git").args(vec!["reset", "HEAD^"])
+            .status().unwrap();
+        Ok(())
+    }
+}
+
