@@ -27,6 +27,8 @@ pub fn build_executor(settings: Context) -> Result<Box<dyn CommandStrategy>, &'s
         result = Box::new(StatusStrategy {});
     } else if &settings.args[1] == "gremlin" {
         result = Box::new(GremlinStrategy {})
+    } else if &settings.args[1] == "down" {
+        result = Box::new(DownStrategy {})
     } else {
         result =  Box::new(NilStrategy {});
     }
@@ -117,3 +119,12 @@ impl CommandStrategy for GremlinStrategy {
     }
 }
 
+struct DownStrategy {}
+
+impl CommandStrategy for DownStrategy {
+    fn execute(&self) -> Result<(), Box<dyn Error>> {
+        Command::new("sudo").args(vec!["docker", "compose", "down"])
+            .status().unwrap();
+        Ok(())
+    }
+}
