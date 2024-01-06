@@ -1,4 +1,3 @@
-use std::error::Error;
 use crate::context::Context;
 
 mod git_handler;

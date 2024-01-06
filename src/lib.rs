@@ -1,4 +1,3 @@
-use std::env;
 use std::error::Error;
 use crate::context::Context;
 
