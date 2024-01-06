@@ -7,9 +7,11 @@ pub fn get_current_branch(cwd: &PathBuf) -> Result<String, Box<dyn Error>> {
     let cwd_path = cwd.to_owned();
     let head = String::from(cwd_path.to_str().unwrap()) + "/.git/HEAD";
     let contents = fs::read_to_string(head)?;
-    let branch = contents.split("/").last().unwrap().trim();
+    let branch= contents.split("/").collect::<Vec<&str>>()[2..].join("/");
+    let trimmed_branch = branch.trim();
 
-    Ok(String::from(branch))
+
+    Ok(String::from(trimmed_branch))
 }
 
 pub fn is_git_project(path: &PathBuf) -> Result<bool, Box<dyn Error>>{
