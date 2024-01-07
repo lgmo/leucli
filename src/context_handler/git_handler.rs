@@ -89,3 +89,17 @@ pub fn handle_down(context: Context) -> Result<(), &'static str> {
     Ok(())
 }
 
+pub fn handle_rbranch(context: Context) -> Result<(), &'static str> {
+    validate_context(&context)?;
+    let vargs = if context.args.len() < 3 {
+        vec!["branch"]
+    } else {
+        vec!["branch", "-m", &context.args[2]]
+    };
+
+
+    Command::new("git").args(vargs)
+        .status().unwrap();
+
+    Ok(())
+}
