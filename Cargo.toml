@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 mockall = "0.12.1"
 serial_test = "2.0.0"
+
+[build]
+target = "debug"
