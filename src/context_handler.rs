@@ -1,9 +1,11 @@
 use crate::context::Context;
+use crate::git_manager::get_project_url;
 
 mod git_handler;
 
 pub fn handle_context(context: Context) -> Result<(), &'static str> {
     if context.args.len() < 2 {
+        get_project_url(&context.cwd);
         return Ok(());
     }
 
