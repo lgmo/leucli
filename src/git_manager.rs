@@ -42,7 +42,6 @@ pub fn get_project_url(path: &PathBuf) -> Result<String, &'static str> {
         .split_whitespace()
         .map(|x| { x.to_string() }).collect();
     let url: String = splitted_result[1].clone();
-    println!("{url}");
     Ok(url)
 }
 
