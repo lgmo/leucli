@@ -8,6 +8,8 @@ mod context;
 mod context_handler;
 #[cfg(test)]
 mod utils;
+mod scopes;
+mod table_builders;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
     // let context = Context::new(Box::new(LinuxFileManager));
