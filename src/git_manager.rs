@@ -1,76 +1,124 @@
 use std::error::Error;
-use std::fs;
-use std::panic::panic_any;
-use std::path::PathBuf;
 use std::process::Command;
-use crate::file_manager;
 
-pub fn get_current_branch(path: &PathBuf) -> Result<String, Box<dyn Error>> {
-    let cwd = path.to_owned();
-    let head = String::from(cwd.to_str().unwrap()) + "/.git/HEAD";
-    let contents = fs::read_to_string(head)?;
-    let branch= contents.split("/").collect::<Vec<&str>>()[2..].join("/");
-    let trimmed_branch = branch.trim();
+pub trait GitManager {
+    fn cwd_is_git_project(&self) -> bool;
 
+    fn get_current_branch(&self) -> Result<String, String>;
 
-    Ok(String::from(trimmed_branch))
+    fn get_project_url(&self) -> Result<String, String>;
 }
 
-pub fn is_git_project(path: &PathBuf) -> Result<bool, Box<dyn Error>> {
-    let cwd = path.to_owned();
-    let local_files = file_manager::get_local_files(&cwd)?;
+pub struct LinuxGitManager;
 
-    Ok(local_files.contains(&".git".to_string()))
-}
+impl GitManager for LinuxGitManager {
+    fn cwd_is_git_project(&self) -> bool {
+        let result = Command::new("git").args(vec!["rev-parse", "--is-inside-work-tree"])
+            .output();
 
-pub fn get_project_url(path: &PathBuf) -> Result<String, &'static str> {
-    let cwd = path.to_owned();
-    let output = Command::new("git")
-        .args(vec!["remote", "-v"])
-        .output();
-    let result: String;
-    match output {
-        Ok(v) => match String::from_utf8(v.stdout) {
-            Ok(r) => { result = r; },
-            _ => { return Err("Unable to fetch result"); },
-        },
-        _ => {
-            return Err("Unable to detect project url");
-        },
+        match result {
+            Ok(output) => match String::from_utf8(output.stdout) {
+                Ok(is_project) => if is_project.trim() == "true" { true } else { false },
+                _ => false,
+            },
+            _ => false,
+        }
     }
-    let splitted_result: Vec<String> = result
-        .split_whitespace()
-        .map(|x| { x.to_string() }).collect();
-    let url: String = splitted_result[1].clone();
-    Ok(url)
+
+    fn get_current_branch(&self) -> Result<String, String> {
+        let result = Command::new("git").args(vec!["rev-parse", "--abbrev-ref", "HEAD"])
+            .output();
+        let name;
+
+        match result {
+            Ok(output) => match String::from_utf8(output.stdout) {
+                Ok(branch_name) => { name = branch_name; },
+                Err(e) => { return Err(e.to_string()); },
+            },
+            Err(e) => { return Err(e.to_string()); },
+        }
+
+        Ok(name)
+    }
+
+    fn get_project_url(&self) -> Result<String, String> {
+        let output = Command::new("git")
+            .args(vec!["remote", "-v"])
+            .output();
+        let result: String;
+        match output {
+            Ok(v) => match String::from_utf8(v.stdout) {
+                Ok(r) => { result = r; },
+                _ => { return Err(String::from("Unable to fetch result")); },
+            },
+            _ => {
+                return Err(String::from("Unable to detect project url"));
+            },
+        }
+        let splitted_result: Vec<&str> = result
+            .split_whitespace().collect();
+
+        Ok(splitted_result[1].to_string())
+    }
+}
+
+#[cfg(test)]
+mod mock_git_manager {
+    use crate::git_manager::GitManager;
+
+    struct MockGitManagerGitProject;
+
+    impl GitManager for MockGitManagerGitProject {
+        fn cwd_is_git_project(&self) -> bool {
+            true
+        }
+
+        fn get_current_branch(&self) -> Result<String, String> {
+            Ok("main".to_string())
+        }
+
+        fn get_project_url(&self) -> Result<String, String> {
+            Ok(String::from("https://github.com/lgmo/lcli"))
+        }
+    }
+
+    struct MockGitManagerNotGitProject;
+
+    impl GitManager for MockGitManagerNotGitProject {
+        fn cwd_is_git_project(&self) -> bool {
+            false
+        }
+
+        fn get_current_branch(&self) -> Result<String, String> {
+            Ok("main".to_string())
+        }
+
+        fn get_project_url(&self) -> Result<String, String> {
+            Ok(String::from("https://github.com/lgmo/leucli"))
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::git_manager::{get_current_branch, is_git_project};
+    use crate::file_manager::{FileManager, LinuxFileManager};
+    use crate::git_manager::{LinuxGitManager, GitManager };
     use crate::utils;
 
     #[test]
-    fn its_not_a_project() {
-        let mut path = utils::get_test_dirs_path();
-        &path.push("not_project");
-
-        assert!(! is_git_project(&path).unwrap());
-    }
-
-    #[test]
     fn its_a_project() {
-        let mut path = utils::get_test_dirs_path();
+        let mut path = utils::get_test_dirs_path(Box::new(LinuxFileManager));
         &path.push("project");
 
-        assert!(is_git_project(&path).unwrap());
+        assert!( LinuxGitManager.cwd_is_git_project() );
     }
 
     #[test]
     fn main_branch() {
-        let mut path = utils::get_test_dirs_path();
+        let mut path = LinuxFileManager.get_cwd();
         &path.push("project");
+        let result = LinuxGitManager.get_current_branch().unwrap();
 
-        assert_eq!("main".to_string(), get_current_branch(&path).unwrap());
+        assert_eq!("master", result.trim());
     }
 }

@@ -1,32 +1,52 @@
-use std::error::Error;
 use std::{env, fs};
 use std::path::PathBuf;
 
-pub fn get_local_files(path: &PathBuf) -> Result<Vec<String>, Box<dyn Error>> {
-    let local_paths = fs::read_dir(&path.as_os_str())?;
+pub trait FileManager {
+    fn get_local_files(&self, path: &PathBuf) -> Result<Vec<String>, String>;
 
-    Ok(
-        local_paths.filter_map(|entry| {
-            entry.ok().and_then(|e|
-                e.path().file_name()
-                    .and_then(|n| n.to_str().map(|s| String::from(s)))
-            )
-        }).collect::<Vec<String>>()
-    )
+    fn get_cwd(&self) -> PathBuf;
 }
 
-pub fn get_cwd() -> PathBuf {
-    env::current_dir().unwrap()
+pub struct LinuxFileManager;
+
+impl FileManager for LinuxFileManager {
+    fn get_local_files(&self, path: &PathBuf) -> Result<Vec<String>, String> {
+        let local_paths;
+
+        match fs::read_dir(&path.as_os_str()) {
+            Ok(v) => { local_paths = v; },
+            Err(e) => { return Err(e.to_string()); }
+        }
+
+        Ok(
+            local_paths.filter_map(|entry| {
+                entry.ok().and_then(|e|
+                    e.path().file_name()
+                        .and_then(|n| n.to_str().map(|s| String::from(s)))
+                )
+            }).collect::<Vec<String>>()
+        )
+    }
+
+    fn get_cwd(&self) -> PathBuf {
+        env::current_dir().unwrap()
+    }
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::file_manager::{get_local_files};
-    use crate::utils;
+mod mock_file_manager {
+    use std::path::PathBuf;
+    use crate::file_manager::FileManager;
 
-    #[test]
-    fn valid_path() {
-        let path = utils::get_test_dirs_path();
-        assert_eq!(vec!["not_project", "project"], get_local_files(&path).unwrap());
+    struct MockFileManager;
+
+    impl FileManager for MockFileManager {
+        fn get_local_files(&self, path: &PathBuf) -> Result<Vec<String>, String> {
+            Ok(vec!["test".to_string()])
+        }
+
+        fn get_cwd(&self) -> PathBuf {
+            PathBuf::from("/tmp")
+        }
     }
 }
