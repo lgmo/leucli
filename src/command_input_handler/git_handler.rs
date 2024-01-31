@@ -44,7 +44,7 @@ pub fn handle_wip(command_input: CommandInput) -> Result<(), &'static str> {
 }
 
 pub fn handle_undo_commit(command_input: CommandInput) -> Result<(), &'static str> {
-    let mut args = Vec::from(vec!["reset", "head^"]);
+    let mut args = Vec::from(vec!["reset", "HEAD^"]);
     args.extend_from_slice(command_input.args.iter().map(|s| s.as_str())
         .collect::<Vec<&str>>().as_slice());
 

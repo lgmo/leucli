@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::process::Command;
 
 pub trait GitManager {
