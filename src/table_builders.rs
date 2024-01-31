@@ -92,7 +92,7 @@ fn insert_user_commands(
 
                     if let Some(aliases) = command.get("aliases") {
                         for alias in aliases.as_array().unwrap() {
-                            command_table.insert(alias.to_string(), cmd.clone());
+                            command_table.insert(alias.as_str().unwrap().to_string(), cmd.clone());
                         }
                     }
                 },
