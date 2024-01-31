@@ -26,7 +26,6 @@ pub fn handle(
     scope_table: HashMap<String, Scope>,
     command_table: HashMap<String, Command>,
 ) -> Result<(), Box<dyn Error>> {
-    println!("{}", &command_input.name);
     let command_name = command_table.get(&command_input.name).unwrap().name.clone();
     let scope = scope_table.get(&command_name).unwrap();
     let _ = check_scope(&scope)?;
