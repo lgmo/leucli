@@ -3,7 +3,6 @@ use crate::command::CommandInput;
 
 mod file_manager;
 mod git_manager;
-mod context;
 mod command_input_handler;
 mod scopes;
 mod table_builders;
