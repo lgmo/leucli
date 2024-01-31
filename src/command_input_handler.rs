@@ -33,7 +33,10 @@ pub fn handle(
         git_handler::handle_git_command(command_input)?;
     } else {
         let command = command_table.get(&command_input.name).unwrap();
-        process::Command::new("sh").args(vec!["-c", ("\"".to_string() + &command.execution_list.join(" ") + "\"").as_str()]).status().unwrap();
+        for execution in &command.execution_list {
+            process::Command::new("sh").args(vec!["-c", execution])
+                .status().unwrap();
+        }
     }
 
     Ok(())
