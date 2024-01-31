@@ -33,9 +33,18 @@ pub fn handle(
         git_handler::handle_git_command(command_input)?;
     } else {
         let command = command_table.get(&command_input.name).unwrap();
-        for execution in &command.execution_list {
-            process::Command::new("sh").args(vec!["-c", execution])
+        if command.execution_list.len() == 0 {
+            return Err("No execution list".to_string().into());
+        } else if command.execution_list.len() == 1 {
+            let mut args = Vec::from(vec!["-c", &command.execution_list[0]]);
+            args.extend(command_input.args);
+            process::Command::new("sh").args(args)
                 .status().unwrap();
+        } else {
+            for execution in &command.execution_list {
+                process::Command::new("sh").args(vec!["-c", execution])
+                    .status().unwrap();
+            }
         }
     }
 
