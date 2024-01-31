@@ -21,6 +21,7 @@ impl CommandInput {
         }
 
         let input_name = input_args[1].clone();
+        assert_eq!(input_name, "ls".to_string());
         let name;
         match command_table.get(&input_name) {
             Some(command) => { name = command.name.to_string(); },

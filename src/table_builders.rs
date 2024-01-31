@@ -67,11 +67,16 @@ fn insert_user_commands(
                     name: "git".to_string(),
                     higher_scope: None,
                 };
-            } else {
+            } else if scope_name != "default" {
                 match scope_table.get(scope_name.trim()) {
                     Some(s) => { scope = s.to_owned(); },
                     _ => { return Err(format!("Scope '{}' of command '{}' not found", scope_name, command_name)); },
                 }
+            } else {
+                scope = Scope {
+                    name: "default".to_string(),
+                    higher_scope: None,
+                };
             }
 
             scope_table.insert(command_name.as_str().to_string(), scope);

@@ -36,7 +36,7 @@ pub fn handle(
         if command.execution_list.len() == 0 {
             return Err("No execution list".to_string().into());
         } else if command.execution_list.len() == 1 {
-            let mut args = Vec::from(vec!["-c", &command.execution_list[0]]);
+            let mut args = Vec::from(vec!["-c".to_string(), command.execution_list[0].clone()]);
             args.extend(command_input.args);
             process::Command::new("sh").args(args)
                 .status().unwrap();
