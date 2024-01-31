@@ -38,7 +38,7 @@ impl GitManager for LinuxGitManager {
             Err(e) => { return Err(e.to_string()); },
         }
 
-        Ok(name)
+        Ok(name.trim().to_string())
     }
 
     fn get_project_url(&self) -> Result<String, String> {
