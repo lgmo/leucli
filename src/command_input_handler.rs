@@ -34,7 +34,9 @@ pub fn handle(
         git_handler::handle_git_command(command_input)?;
     } else {
         let command = command_table.get(&command_input.name).unwrap();
-        for execution in &command.execution_list {
+        let mut execution_list = command.execution_list.clone();
+        execution_list[0] = execution_list[0].clone() + &command_input.args.join(" ");
+        for execution in &execution_list {
             process::Command::new("sh").args(vec!["-c", execution])
                 .status().unwrap();
         }
